@@ -42,7 +42,7 @@ def save_credentials(new_user):
             'name': username  # Store the username as the 'name' key
         }
 
-    with open('config.yaml', 'w') as file:
+    with open('stproj1/config.yaml', 'w') as file:
         yaml.dump(config, file)
 
 # Save data to Excel
