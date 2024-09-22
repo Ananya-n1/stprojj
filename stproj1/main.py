@@ -5,6 +5,7 @@ import streamlit_authenticator as stauth
 import pandas as pd
 from openpyxl import load_workbook
 import os
+import requests  # Make sure to import requests
 
 # Initialize session state
 if 'in_session' not in st.session_state:
@@ -14,7 +15,7 @@ if 'in_session' not in st.session_state:
 def landing():
     st.title("🚀 Streamlit Application")
     st.sidebar.header("Choose an Operation")
-    option = st.sidebar.radio('Select Role', ['Admin Login', 'User Login', 'User Signup'])
+    option = st.sidebar.radio('Select Role', ['Admin Login', 'User Login', 'User Signup', 'IP Webcam Stream'])
 
     if option == 'Admin Login':
         admin_login()
@@ -22,12 +23,13 @@ def landing():
         user_login()
     elif option == 'User Signup':
         signup()
+    elif option == 'IP Webcam Stream':
+        ip_webcam_stream()
 
 # Load credentials from YAML
 def load_credentials():
-    # Assuming the config.yaml is in the same directory as the main script
-    base_path = os.path.dirname(__file__)  # Get the directory of the current script
-    file_path = os.path.join(base_path, 'config.yaml')  # Adjusted to avoid repetition
+    base_path = os.path.dirname(__file__)  
+    file_path = os.path.join(base_path, 'config.yaml')  
     
     if not os.path.exists(file_path):
         st.error(f"Config file not found at {file_path}. Please check the file path.")
@@ -54,7 +56,7 @@ def save_credentials(new_user):
             'mail': user_info['mail'],
             'password': user_info['password'],
             'role': user_info['role'],
-            'name': username  # Store the username as the 'name' key
+            'name': username  
         }
 
     with open(file_path, 'w') as file:
@@ -63,7 +65,7 @@ def save_credentials(new_user):
 # Save data to Excel
 def save_data_to_excel(name, choice):
     base_path = os.path.dirname(__file__)
-    file_name = os.path.join(base_path, 'form_data.xlsx')  # Adjusted for Excel file
+    file_name = os.path.join(base_path, 'form_data.xlsx')
 
     data = pd.DataFrame([[name, choice]], columns=['Name', 'Gender'])
 
@@ -92,7 +94,7 @@ def admin_login():
 
     config = load_credentials()
     if config is None:
-        return  # Early return if the config file couldn't be loaded
+        return  
 
     authenticator = stauth.Authenticate(
         config['credentials'],
@@ -120,7 +122,7 @@ def user_login():
 
     config = load_credentials()
     if config is None:
-        return  # Early return if the config file couldn't be loaded
+        return  
 
     authenticator = stauth.Authenticate(
         config['credentials'],
@@ -132,11 +134,10 @@ def user_login():
     username, auth_status, email = authenticator.login(location='main', key='user_login')
 
     if auth_status:
-        # Check if the username exists in the config before trying to access it
         if username in config['credentials']['usernames']:
             user_role = config['credentials']['usernames'][username]['role']
             if user_role == 'user':
-                st.session_state['username'] = username  # Store the username in the session state
+                st.session_state['username'] = username  
                 dashboard()
             else:
                 st.error("Access denied.")
@@ -200,9 +201,8 @@ def signup():
         if email and password and name:
             users = load_credentials()
             if users is None:
-                return  # Early return if the config file couldn't be loaded
+                return  
 
-            # Check if the username already exists
             if name in users['credentials']['usernames']:
                 st.error("Username already exists!")
             else:
@@ -217,10 +217,31 @@ def signup():
                     }
                 }
 
-                save_credentials(new_user)  # Save the new user details to config.yaml
+                save_credentials(new_user)
                 st.success("Registration Successful. You can now login.")
         else:
             st.error("Please enter all the details.")
+
+# IP Webcam Stream Function
+def ip_webcam_stream():
+    st.title("IP Webcam Stream")
+
+    ip_address = "192.168.29.156"  
+    camera_url = f"http://{ip_address}:8080/video"
+
+    if st.button('Start Stream'):
+        st.write("Fetching video from mobile...")
+
+        try:
+            video_feed = requests.get(camera_url, stream=True)
+
+            if video_feed.status_code == 200:
+                st.video(camera_url)
+            else:
+                st.error(f"Error fetching video stream. Status code: {video_feed.status_code}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+
 # Main execution
 if __name__ == "__main__":
     landing()
