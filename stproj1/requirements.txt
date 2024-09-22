@@ -4,3 +4,4 @@ streamlit-authenticator
 bcrypt
 pyyaml
 pandas
+requests
