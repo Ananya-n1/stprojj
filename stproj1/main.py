@@ -23,15 +23,29 @@ def landing():
     elif option == 'User Signup':
         signup()
 
-# Load credentials from YAML
+# Load credentials from YAML with dynamic path
 def load_credentials():
-    with open('stprojj/stproj1/config.yaml', 'r') as file:
+    base_path = os.path.dirname(__file__)  # Get the directory of the current file
+    file_path = os.path.join(base_path, 'stprojj', 'stproj1', 'config.yaml')  # Construct path to config.yaml
+    
+    if not os.path.exists(file_path):
+        st.error(f"Config file not found at {file_path}. Please check the file path.")
+        return None
+    
+    with open(file_path, 'r') as file:
         config = yaml.safe_load(file)
     return config
 
-# Save new user credentials to YAML
+# Save new user credentials to YAML with dynamic path
 def save_credentials(new_user):
-    with open('stprojj/stproj1/config.yaml', 'r') as file:
+    base_path = os.path.dirname(__file__)
+    file_path = os.path.join(base_path, 'stprojj', 'stproj1', 'config.yaml')
+
+    if not os.path.exists(file_path):
+        st.error(f"Config file not found at {file_path}. Cannot save new user.")
+        return
+    
+    with open(file_path, 'r') as file:
         config = yaml.safe_load(file)
 
     for username, user_info in new_user.items():
@@ -42,12 +56,14 @@ def save_credentials(new_user):
             'name': username  # Store the username as the 'name' key
         }
 
-    with open('stproj1/config.yaml', 'w') as file:
+    with open(file_path, 'w') as file:
         yaml.dump(config, file)
 
-# Save data to Excel
+# Save data to Excel with dynamic path
 def save_data_to_excel(name, choice):
-    file_name = 'form_data.xlsx'
+    base_path = os.path.dirname(__file__)
+    file_name = os.path.join(base_path, 'form_data.xlsx')  # Dynamic path for Excel file
+
     data = pd.DataFrame([[name, choice]], columns=['Name', 'Gender'])
 
     if not os.path.exists(file_name):
@@ -74,6 +90,9 @@ def admin_login():
     st.sidebar.subheader("Admin Login")
 
     config = load_credentials()
+    if config is None:
+        return  # Early return if the config file couldn't be loaded
+
     authenticator = stauth.Authenticate(
         config['credentials'],
         config['cookie']['name'],
@@ -81,7 +100,6 @@ def admin_login():
         config['cookie']['expiry_days']
     )
 
-    # Corrected login call: no additional string before 'location'
     name, auth_status, email = authenticator.login(location='sidebar', key='admin_login')
 
     if auth_status:
@@ -100,6 +118,9 @@ def user_login():
     st.sidebar.subheader("User Login")
 
     config = load_credentials()
+    if config is None:
+        return  # Early return if the config file couldn't be loaded
+
     authenticator = stauth.Authenticate(
         config['credentials'],
         config['cookie']['name'],
@@ -133,9 +154,11 @@ def admin_dashboard():
         submit_button = st.form_submit_button(label='Submit')
 
     if st.button('Load Data'):
-        filename = 'form_data.xlsx'
-        if os.path.exists(filename):
-            df = pd.read_excel(filename)
+        base_path = os.path.dirname(__file__)
+        file_name = os.path.join(base_path, 'form_data.xlsx')
+
+        if os.path.exists(file_name):
+            df = pd.read_excel(file_name)
             st.dataframe(df)
         else:
             st.warning("No data available to show, fill the form first")
@@ -151,9 +174,11 @@ def dashboard():
     st.success("Login successful! Welcome, User.")
     st.header("You have reading permissions only.")
     if st.button('Load Data'):
-        filename = 'form_data.xlsx'
-        if os.path.exists(filename):
-            df = pd.read_excel(filename)
+        base_path = os.path.dirname(__file__)
+        file_name = os.path.join(base_path, 'form_data.xlsx')
+
+        if os.path.exists(file_name):
+            df = pd.read_excel(file_name)
             st.dataframe(df)
         else:
             st.warning("No data available to show, fill the form first.")
@@ -169,6 +194,8 @@ def signup():
     if st.button("Sign Up"):
         if email and password and name:
             users = load_credentials()
+            if users is None:
+                return  # Early return if the config file couldn't be loaded
             if name in users['credentials']['usernames']:
                 st.error("Username already exists!")
             else:
@@ -176,7 +203,7 @@ def signup():
                 hashed_pw = bcrypt.hashpw(password.encode('utf-8'), salt)
                 new_user = {
                     name: {
-                        'name': name,  # Ensure this line is included
+                        'name': name,
                         'mail': email,
                         'password': hashed_pw.decode('utf-8'),
                         'role': 'user'
