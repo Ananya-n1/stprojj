@@ -25,13 +25,13 @@ def landing():
 
 # Load credentials from YAML
 def load_credentials():
-    with open('config.yaml', 'r') as file:
+    with open('stprojj/stproj1/config.yaml', 'r') as file:
         config = yaml.safe_load(file)
     return config
 
 # Save new user credentials to YAML
 def save_credentials(new_user):
-    with open('config.yaml', 'r') as file:
+    with open('stprojj/stproj1/config.yaml', 'r') as file:
         config = yaml.safe_load(file)
 
     for username, user_info in new_user.items():
