@@ -132,12 +132,16 @@ def user_login():
     username, auth_status, email = authenticator.login(location='main', key='user_login')
 
     if auth_status:
-        user_role = config['credentials']['usernames'][username]['role']
-        if user_role == 'user':
-            st.session_state['username'] = username  # Store the username in the session state
-            dashboard()
+        # Check if the username exists in the config before trying to access it
+        if username in config['credentials']['usernames']:
+            user_role = config['credentials']['usernames'][username]['role']
+            if user_role == 'user':
+                st.session_state['username'] = username  # Store the username in the session state
+                dashboard()
+            else:
+                st.error("Access denied.")
         else:
-            st.error("Access denied.")
+            st.error("User not found. Please sign up first.")
     elif auth_status is False:
         st.error("ERROR: Invalid credentials.")
     elif auth_status is None:
@@ -197,6 +201,8 @@ def signup():
             users = load_credentials()
             if users is None:
                 return  # Early return if the config file couldn't be loaded
+
+            # Check if the username already exists
             if name in users['credentials']['usernames']:
                 st.error("Username already exists!")
             else:
@@ -211,11 +217,10 @@ def signup():
                     }
                 }
 
-                save_credentials(new_user)
+                save_credentials(new_user)  # Save the new user details to config.yaml
                 st.success("Registration Successful. You can now login.")
         else:
             st.error("Please enter all the details.")
-
 # Main execution
 if __name__ == "__main__":
     landing()
