@@ -23,10 +23,11 @@ def landing():
     elif option == 'User Signup':
         signup()
 
-# Load credentials from YAML with dynamic path
+# Load credentials from YAML
 def load_credentials():
-    base_path = os.path.dirname(__file__)  # Get the directory of the current file
-    file_path = os.path.join(base_path, 'stprojj', 'stproj1', 'config.yaml')  # Construct path to config.yaml
+    # Assuming the config.yaml is in the same directory as the main script
+    base_path = os.path.dirname(__file__)  # Get the directory of the current script
+    file_path = os.path.join(base_path, 'config.yaml')  # Adjusted to avoid repetition
     
     if not os.path.exists(file_path):
         st.error(f"Config file not found at {file_path}. Please check the file path.")
@@ -36,10 +37,10 @@ def load_credentials():
         config = yaml.safe_load(file)
     return config
 
-# Save new user credentials to YAML with dynamic path
+# Save new user credentials to YAML
 def save_credentials(new_user):
     base_path = os.path.dirname(__file__)
-    file_path = os.path.join(base_path, 'stprojj', 'stproj1', 'config.yaml')
+    file_path = os.path.join(base_path, 'config.yaml')
 
     if not os.path.exists(file_path):
         st.error(f"Config file not found at {file_path}. Cannot save new user.")
@@ -59,10 +60,10 @@ def save_credentials(new_user):
     with open(file_path, 'w') as file:
         yaml.dump(config, file)
 
-# Save data to Excel with dynamic path
+# Save data to Excel
 def save_data_to_excel(name, choice):
     base_path = os.path.dirname(__file__)
-    file_name = os.path.join(base_path, 'form_data.xlsx')  # Dynamic path for Excel file
+    file_name = os.path.join(base_path, 'form_data.xlsx')  # Adjusted for Excel file
 
     data = pd.DataFrame([[name, choice]], columns=['Name', 'Gender'])
 
